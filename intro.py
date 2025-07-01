@@ -5,12 +5,23 @@ WIDTH = 800
 HEIGHT = 600
 
 floor_color = (105, 72, 30)
+black = (0, 0, 0)
+
+score = 0
+life = 3
+can_collide = True
 
 
 fly = Actor('enemy/fly_a.png')
 fly.x = 900
 fly.y = 80
 fly.images = ['enemy/fly_a.png', 'enemy/fly_b.png']
+
+bee = Actor('enemy/bee_a.png')
+bee.x = 900
+bee.y = 80
+bee.images = ['enemy/bee_a.png', 'enemy/bee_b.png']
+
 
 slime = Actor('enemy/slime_fire_walk_b.png')
 slime.x = 900
@@ -23,12 +34,20 @@ alien.x = 100
 alien.y = 370
 alien.images = ['character/alien_a.png', 'character/alien_b.png']
 
+hud_life = Actor('hud/hud_player_purple.png')
+hud_life.x = 720
+hud_life.y = 34
+
 vel_jump = 0
 gravity = 1
 
+def habilitar_colisao():
+    global can_collide
+    can_collide = True
+
 def update():
-    global vel_jump
-    global gravity
+    global vel_jump, gravity, score, life, can_collide
+
 
     if keyboard.up:
         vel_jump = -10
@@ -45,15 +64,35 @@ def update():
     fly.x -= 4
     if fly.x < -10:
         fly.x = random.randint(1000, 2500)
+        fly.y = random.randint(100, 260)
+
+    bee.x -= 5
+    if bee.x < -20:
+        bee.x = random.randint(1000, 2600)
+        bee.y = random.randint(100, 260)
 
     slime.x -= 3
     if slime.x < -15:
         slime.x = random.randint(1000, 2500)
 
+    if (alien.colliderect(slime) or alien.colliderect(fly)) and can_collide:
+        sounds.sfx_disappear_fixed.play()
+        life -= 1
+        can_collide = False
+        clock.schedule_unique(habilitar_colisao, 3.0)
+
+    if alien.colliderect(bee):
+        sounds.sfx_coin_fixed.play()
+        bee.x = random.randint(1000, 2600)
+        bee.y = random.randint(100, 260)
+        score += 10
+
 
 
 def draw():
     screen.clear()
+
+    screen.draw.filled_rect(Rect(0,0,800, 200), (255,255,255))
 
     background = images.background.background
     bg_width = background.get_width()
@@ -63,12 +102,24 @@ def draw():
     for x in range(cols):
         screen.blit(background, (x * bg_width, 200))
 
+    if life == 0:
+        for x in range(cols):
+            screen.blit(images.background.background_fade_mushrooms, (x * bg_width, 200))
+        screen.draw.filled_rect(Rect(0,400,800, 600), (floor_color))
+        screen.draw.text('Game Over', centerx=380, centery=150 , color=(black), fontname = 'alien_mushroom', fontsize = 100)
+        screen.draw.text('Score: ' + str(score), centerx=380, centery=250, color=(black), fontname = 'alien_mushroom', fontsize = 50)
 
-    screen.draw.filled_rect(Rect(0,400,800, 600), (floor_color))
-    screen.draw.filled_rect(Rect(0,0,800, 200), (255,255,255))
 
-    fly.draw()
-    slime.draw()
-    alien.draw()
+
+    else:
+        screen.draw.filled_rect(Rect(0,400,800, 600), (floor_color))
+        screen.draw.text('Score: ' + str(score), (20, 20), color=(black), fontname = 'alien_mushroom', fontsize = 50)
+        screen.draw.text(str(life), (750, 20), color=(black), fontname = 'alien_mushroom', fontsize = 50)
+
+        fly.draw()
+        slime.draw()
+        alien.draw()
+        bee.draw()
+        hud_life.draw()
 
 pgzrun.go()
