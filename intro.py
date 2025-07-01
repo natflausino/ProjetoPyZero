@@ -14,13 +14,14 @@ can_collide = True
 play = False
 music_on = True
 music_started = False
+vel_jump = 0
+gravity = 1
 
 
 button_play = Actor('icon/play.png', (400, 300))
 button_exit = Actor('icon/exit.png', (500, 300))
 button_music = Actor('icon/music_on.png', (300, 300))
 button_music_off = Actor('icon/music_off.png', (300, 300))
-
 
 
 fly = Actor('enemy/fly_a.png')
@@ -39,7 +40,6 @@ slime.x = 900
 slime.y = 370
 slime.images = ['enemy/slime_fire_walk_a.png', 'enemy/slime_fire_walk_b.png']
 
-
 alien = Actor('character/alien_a.png')
 alien.x = 100
 alien.y = 370
@@ -49,8 +49,6 @@ hud_life = Actor('hud/hud_player_purple.png')
 hud_life.x = 720
 hud_life.y = 34
 
-vel_jump = 0
-gravity = 1
 
 def hability_collide():
     global can_collide
@@ -134,14 +132,15 @@ def draw_menu(cols, bg_width):
 
 def on_mouse_down(pos):
     global play, music_on
-    if  not play and button_play.collidepoint(pos):
-        play = True
-    elif music_on and button_music.collidepoint(pos):
-        music_on = False
-    elif not music_on and button_music_off.collidepoint(pos):
-        music_on = True
-    elif button_exit.collidepoint(pos):
-        exit()
+    if not play:
+        if button_play.collidepoint(pos):
+            play = True
+        elif music_on and button_music.collidepoint(pos):
+            music_on = False
+        elif not music_on and button_music_off.collidepoint(pos):
+            music_on = True
+        elif button_exit.collidepoint(pos):
+            exit()
 
 def draw():
     screen.clear()
